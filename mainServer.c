@@ -124,3 +124,84 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     
+     // Boucle d'acceptation
+    while((peerSocket = acceptConnections(boundSocket))) {
+        // Vérifie si un client tente de se connecter,
+        // et si la tentative échoue, attend une seconde
+        if (peerSocket == -1) {
+            if (isVerbose) {
+                printf("Échec lors de l'acceptation de la connexion du client\n");
+            }
+            sleep(1);
+            continue;
+        }
+        if (isVerbose) {
+            printf("Connexion acceptée\n");
+        }
+
+        // Recevoir le message du client. Si l'envoi du message échoue,
+        // fermer la connexion et attendre une seconde
+
+        bytesReceived = recv(peerSocket, recvBuf, maxBytes, 0);
+
+        if (bytesReceived == -1) {
+            if (isVerbose) {
+                printf("Échec lors de la réception du message\n");
+            }
+            close(peerSocket);
+            sleep(1);
+            continue;
+
+        } else {
+            if (bytesReceived == 0) {
+                // Si aucun octet n'est envoyé, fermer la connexion
+                if (isVerbose) {
+                    printf("Connexion avec le client fermée\n");
+                }
+                close(peerSocket);
+                continue;
+            } else {
+                // Exécuter la commande sur l'interpréteur local
+                if (isVerbose) {
+                    printf("%d octets reçus du client\n", bytesReceived);
+                }
+                bytesReceived = 0;
+
+                // Supprimer les sauts de ligne en fin de saisie
+                char checkExit[strlen((char*)recvBuf)];
+                strcpy(checkExit, (char*)recvBuf);
+                checkExit[strcspn(checkExit, "\r\n")] = '\0';
+
+                if (strcmp("quitter", checkExit) == 0) {
+                    free(recvBuf);
+                    free(sendBuf);
+                    close(peerSocket);
+                    close(boundSocket);
+                    if (isVerbose) {
+                        printf("Fermeture du serveur\n");
+                    }
+                    return 1;
+                } else {
+                    execShell((char*)recvBuf, (char*)sendBuf, maxBytes);
+                    if (sendBuf == NULL) {
+                        if (isVerbose) {
+                            printf("Échec de l'exécution de la commande\n");
+                        }
+                        continue;
+                    }
+                    if (isVerbose) {
+                        printf("Résultat de la commande :\n\n%s\n", (char*)sendBuf);
+                    }
+
+                    // Envoyer les résultats de l'exécution au client
+                    bytesSent = send(peerSocket, sendBuf, strlen(sendBuf), 0);
+                    if (isVerbose) {
+                        printf("%d octets envoyés au client\n", bytesSent);
+                    }
+                    memset(sendBuf, 0, strlen(sendBuf));
+                    memset(recvBuf, 0, strlen(recvBuf));
+                }
+            }
+        }
+    }
+}
