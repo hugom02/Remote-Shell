@@ -110,3 +110,17 @@ int main(int argc, char* argv[]) {
             printf("Écoute démarrée\n");
         }
     }
+
+    // Initialisation des variables nécessaires à la communication
+    int peerSocket;
+    int bytesReceived;
+    int bytesSent;
+    void* recvBuf = malloc(maxBytes);
+    void* sendBuf = malloc(maxBytes);
+    if (recvBuf == NULL || sendBuf == NULL) {
+        if (isVerbose) {
+            printf("L'appel à malloc() a échoué\n");
+        }
+        return 0;
+    }
+    
