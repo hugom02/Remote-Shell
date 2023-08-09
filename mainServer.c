@@ -79,3 +79,13 @@ int main(int argc, char* argv[]) {
             printf("Socket créée\n");
         }
     }
+    if (bindSocket(boundSocket, customPort, targetIP) == -1) {
+        if (isVerbose) {
+            printf("Erreur lors de la liaison de la socket\n");
+        }
+        return 0;
+    } else {
+        if (isVerbose) {
+            printf("Socket liée\n");
+        }
+    }
