@@ -89,3 +89,24 @@ int main(int argc, char* argv[]) {
             printf("Socket liée\n");
         }
     }
+    if (isVerbose) {
+        printf("Serveur démarré avec les paramètres suivants\n");
+        if (targetIP[0] == 0) {
+            printf("Acceptation de toutes les connexions sur le port %s\n", customPort);
+        } else {
+           printf("Acceptation de toutes les connexions sur l'IP %s:%s\n", targetIP, customPort);
+        }
+        printf("Octets max/communication : %ld\n", maxBytes);
+    }
+    
+    // Démarrer l'écoute des connexions
+    if (listen(boundSocket, BACKLOG) == -1) {
+        if (isVerbose) {
+            printf("Erreur lors de l'écoute\n");
+        }
+        return 0;
+    } else {
+        if (isVerbose) {
+            printf("Écoute démarrée\n");
+        }
+    }
