@@ -13,7 +13,6 @@
 #define MAX 10240 // Max number of bytes to be read from stream
 #define BACKLOG 1 // Max pending connections
 
-
 // Creates a new unbound socket (AF_INET & SOCK_STREAM)
 int createSocket();
 
@@ -25,7 +24,6 @@ int bindSocket(int socketFD, char* port, char* ip);
 // Accept connections
 // Returns a socket file descriptor on success, -1 on error
 int acceptConnections(int socketFD);
-
 
 // Executes a command in a terminal.
 // Sets rv to the output of the command on success, NULL on error.
