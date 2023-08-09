@@ -36,3 +36,29 @@ int bindSocket(int socketFD, char* port, char* ip) {
     }
     return -1;
 }
+int acceptConnections(int socketFD) {
+    struct sockaddr_in* peer = malloc(sizeof(struct sockaddr_in*)); 
+    if (peer == NULL ) {
+        return 0;
+        }
+    socklen_t peer_addr_size = sizeof(peer);
+    int connectedSocketFD = accept(socketFD, (struct sockaddr*)peer, &peer_addr_size);
+    free(peer);
+    return connectedSocketFD;
+}
+
+void execShell(char* command, char* rv, long max) {
+    char* str = malloc(1);
+    if (str == NULL) {
+        rv = NULL;
+        return;
+    }
+    FILE* shellReturn;
+    shellReturn = popen(command, "r"); // Exécuter la commande
+    while (fgets(str, max, shellReturn) != NULL) { 
+        // Lire la sortie de la commande dans rv
+        strcat(rv, str); 
+    }
+    free(str);
+    return;
+}
