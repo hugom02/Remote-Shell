@@ -65,3 +65,110 @@ int main(int argc, char* argv[]) {
             }
         }
     }
+    if (isVerbose) {
+        printf("Connexion à l'interpréteur distant avec les paramètres suivants\n");
+        if (targetIP[0] == 0) {
+            printf("Port : %s\n", customPort);
+        } else {
+            printf("Adresse IP : %s:%s\n", targetIP, customPort);
+        }
+        printf("Octets max/communication : %ld\n\n", maxBytes);
+    }
+    // Initialisation des variables nécessaires à la communication
+    void* recvBuf = malloc(maxBytes);
+    void* sendBuf = malloc(maxBytes);
+    if (recvBuf == NULL || sendBuf == NULL) {
+        if (isVerbose) {
+            printf("L'appel à malloc() a échoué\n");
+        }
+        return 0;
+    }
+    
+    int serverSocketFD;
+    int bytesSent;
+    int bytesReceived;
+
+    // Boucle de connexion
+    while((serverSocketFD = connectToServer(customPort, targetIP))) {
+        // Vérifie si la connexion est réussie, sinon attend une seconde avant de réessayer
+        if (serverSocketFD == -1) {
+            if (isVerbose) {
+                printf("L'appel à getaddrinfo() a échoué\n");
+            }
+            sleep(1);
+            continue;
+        } else if (serverSocketFD == -2) {
+            if (isVerbose) {
+                printf("Aucun serveur n'a pu être trouvé\n");
+            }
+            sleep(1);
+            continue;
+        } else if (serverSocketFD == -3) {
+            if (isVerbose) {
+                printf("Échec de création de la socket\n");
+            }
+            sleep(1);
+            continue;
+        } else {
+            printf("Connexion au serveur réussie\n");
+        }
+
+        // Obtenir la commande à exécuter sur l'interpréteur distant
+        if (isVerbose) {
+            printf("Entrez une commande\n");
+        }
+        fgets((char*)sendBuf, maxBytes, stdin);
+        // Envoyer la commande à l'interpréteur distant
+        if (isVerbose) {
+            printf("Envoi de la commande\n");
+        }
+        bytesSent = send(serverSocketFD, sendBuf, strlen(sendBuf), 0);
+        if (bytesSent == -1) {
+            if (isVerbose) {
+                printf("Échec de l'envoi\n");
+            }
+            close(serverSocketFD);
+            continue;
+        } else {
+            if (isVerbose) {
+                printf("%d octets envoyés\n", bytesSent);
+            }
+            bytesSent = 0;
+        }
+        // Recevoir le résultat de l'exécution depuis l'interpréteur distant
+        bytesReceived = recv(serverSocketFD, recvBuf, maxBytes, 0);
+        if (bytesReceived == -1) {
+            if (isVerbose) {
+                printf("Échec de la réception\n");
+            }
+            close(serverSocketFD);
+            continue;
+        } else {
+            if (isVerbose) {
+                printf("%d octets reçus\n", bytesReceived);
+            }
+        }
+
+        // Supprimer les sauts de ligne en fin de saisie
+        char checkExit[strlen((char*)sendBuf)];
+        strcpy(checkExit, (char*)sendBuf);
+        checkExit[strcspn(checkExit, "\r\n")] = '\0'; 
+
+        if (strcmp(checkExit, "quitter") == 0) {
+            if (isVerbose) {
+                printf("Serveur fermé\n");
+            }
+            // Fermeture de l'interpréteur 
+            free(recvBuf);
+            free(sendBuf);
+            close(serverSocketFD);
+            return 1;
+        }
+
+        // Afficher l'exécution dans l'interpréteur local
+        printf("\n%s\n", (char*)recvBuf);
+        memset(sendBuf, 0, strlen((char*)sendBuf));
+        memset(recvBuf, 0, strlen((char*)recvBuf));
+        close(serverSocketFD);
+    }
+}
