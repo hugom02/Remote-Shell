@@ -141,7 +141,6 @@ int main(int argc, char* argv[]) {
 
         // Recevoir le message du client. Si l'envoi du message échoue,
         // fermer la connexion et attendre une seconde
-
         bytesReceived = recv(peerSocket, recvBuf, maxBytes, 0);
 
         if (bytesReceived == -1) {
