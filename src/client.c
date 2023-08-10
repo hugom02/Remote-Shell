@@ -26,3 +26,22 @@ int connectToServer(char* port, char* ip) {
 	if (res == NULL) {
 		return -2;
 	}
+
+	// Se connecter à la première adresse possible
+	for (attempt = res; res != NULL; res = res->ai_next) {
+		serverSocket = socket(attempt->ai_family, attempt->ai_socktype, attempt->ai_protocol);
+		if (serverSocket == -1) {
+			close(serverSocket);
+			continue;
+		}
+		if (connect(serverSocket, attempt->ai_addr, attempt->ai_addrlen) == -1) {
+			close(serverSocket);
+			continue;
+		}
+		freeaddrinfo(res); // libérer
+		return serverSocket;
+	}
+
+	// Impossible de se connecter à des sockets
+	return -3;
+}
