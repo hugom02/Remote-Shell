@@ -8,5 +8,5 @@ int connectToServer(char* port, char* ip) {
 	int rv;
 	int serverSocket;
 	// Le serveur est IPv4 et le type de socket est STREAM
-    hints.ai_family = AF_INET; // INET = IPv4
-    hints.ai_socktype = SOCK_STREAM;
+    	hints.ai_family = AF_INET; // INET = IPv4
+    	hints.ai_socktype = SOCK_STREAM;
