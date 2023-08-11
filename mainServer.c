@@ -126,8 +126,7 @@ int main(int argc, char* argv[]) {
     
      // Boucle d'acceptation
     while((peerSocket = acceptConnections(boundSocket))) {
-        // Vérifie si un client tente de se connecter,
-        // et si la tentative échoue, attend une seconde
+        // Vérifie si un client tente de se connecter, et si la tentative échoue, attend une seconde
         if (peerSocket == -1) {
             if (isVerbose) {
                 printf("Échec lors de l'acceptation de la connexion du client\n");
@@ -139,8 +138,7 @@ int main(int argc, char* argv[]) {
             printf("Connexion acceptée\n");
         }
 
-        // Recevoir le message du client. Si l'envoi du message échoue,
-        // fermer la connexion et attendre une seconde
+        // Recevoir le message du client. Si l'envoi du message échoue, fermer la connexion et attendre une seconde
         bytesReceived = recv(peerSocket, recvBuf, maxBytes, 0);
 
         if (bytesReceived == -1) {
